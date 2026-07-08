@@ -19,7 +19,14 @@
 body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
 .admin-header{background:var(--azul);padding:1.5rem 2rem;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--verde)}
 .admin-brand{display:flex;align-items:center;gap:20px}
-.admin-logo{width:80px;height:auto}
+.admin-logo{
+  width:100px;
+  height:auto;
+  max-height:80px;
+  object-fit:contain;
+  display:block;
+  flex-shrink:0;
+}
 .admin-title{color:#fff;font-size:24px;font-weight:700;margin:0}
 .admin-actions{display:flex;gap:10px;align-items:center}
 .btn-logout{background:#b91c1c;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600}
@@ -104,8 +111,7 @@ body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-
 <div id="dashboard-section" class="page-section">
   <div class="admin-header">
     <div class="admin-brand">
-      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABdwwAAUGCAIAAAAE8uR6AADLqUlEQVR4nOzdd3zdbb0/8G/33ntJ914UaCllT0FBhqI4EMWB+17v1Xvd2zucP+9yD1QUUdmIskcLtAxLoaUt3XRAm+4maXby+yMYSikd6Uk+ZzyfD/94OTn5fl+C7Tl99fN5f9J6e3sjAAAAAIZWeugAAAAAAKlIKQMAAAAQgFIGAAAAIACljM1mzZo1a9asRYsWLV26dNGiRdOnT584ceLoWQAKCgalpZfhJBiVbNasWSmp+qPy5buFjFqsVitNvQVLcaKvrz8q9fXJUj9Pj7PmfCZVcgdqr9w5DFI89ZNS5hMBK2UAAAAEUMoAHIVz5859+OGHH3744Q8//PDDD7766qu/vfXmTVu2PPXkU/n5+f3p6fkFBfn5+V2dXVdKSh5dsGDhvHnz5s2dO3fevHlz5sxZsmRJydKlpaWlVouV4iOV0kqJV1dXl5eXl5+fn5eXV1BQUFZ2r6BmHcW6deuaRoxSPzFtQWFhYVFRUUlJSWVlZWlp6cqVK0tKSlbcwQ6p+f3lQ1LGAJQSAAAA6CsuPAYEXu1V+aqJKSXVz6gJv5iDQ2qGIL7a7GCTQk7d0qWpH6pQNNVVVY+lBvtLAjN2FE3+w0lNKkGqBKrLPSvVE3E0g+fE2FCiVdyxB8rR1B2nG8qV0c5E2qsWpHd4ebPJM8dXfUqvO0RI8dJUIppD5VBxWvk7eUJZ2+JT8aQw6oDqWA02dChZ2tqO2C2WJOv2PBpXZf7FeHE4VvpRjz2b2e3EfNfS+TZlVmPsV6+X9mN0c3d9ZfQ3fmxzJp0zqM3P0D5qzj6uEUf4GI6hPDQvhT3pGZIWyVLl5fwG7hbUa7w0ql2ZZvH+5aNVWOOLvEFQ4d6XMZWgpWZeHfUFfNhWMqF7qF2l2+rKdE0MkOCwGZQnVxE7d+/WfMp0q0HGhSwX4r8w+DQGVB1p0gdLhEFVCGN+oQhBaFfTChplO8HXECAwlAGYhh+z1E1EwMPZjE5zEELgIaJMvuJHpVYQfkqxPn5Y8JhFOd3r1VJ+9J6kfFqjjEKtChqaHQMYnpDM4Q2xzXPJ0DkpN5Hn4VavKx8YlUnMVWl6bw3kRtPLhGlzd5MvqJfHzqN5vfZhSO3UKVJWvJhMqb1A0TxvLm9hHvVFdF/xI+2qTkQ/J6BidKWMfZMqJrjcsY9Fxcx+7IqPBCICSGFXKvFRFxBPKiLg1h0UqU14MKRMvqO5sLhKXl+3Qw4UiqSUqFrGiQQqGYIXqK7JqJGX3FMYF6O5EYUSZqhF45WDm2KmYLbAGP3jkdEDHPkP6THQT1gVCzz/kpqBVUOYqTLTfDj4JlD
-" class="admin-logo">
+      <img class="header-logo" src="numed_white_bg.png" alt="NUMED">
       <h1 class="admin-title">Plaza Andalucía - Panel Admin</h1>
     </div>
     <div class="admin-actions">
