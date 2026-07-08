@@ -73,9 +73,11 @@ tbody tr:hover{background:var(--bg)}
 .status-pending{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
 .status-absent{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
 
-.col-acciones{text-align:center}
+.col-acciones{text-align:center;display:flex;gap:6px;justify-content:center}
 .btn-edit{background:var(--azul-med);color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
 .btn-edit:hover{background:var(--azul)}
+.btn-pdf{background:var(--verde);color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+.btn-pdf:hover{background:var(--verde-dark)}
 
 /* FIRMA */
 code{background:var(--bg);padding:3px 6px;border-radius:4px;font-family:'Monaco','Courier New',monospace}
@@ -213,6 +215,7 @@ code{background:var(--bg);padding:3px 6px;border-radius:4px;font-family:'Monaco'
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 // ========== CONFIGURACIÓN SUPABASE ==========
 const SUPA_URL = "https://lfyholfrqxyryveikspy.supabase.co";
@@ -284,6 +287,9 @@ window.addEventListener('load', async () => {
 // ========== CARGAR DATOS ==========
 async function cargarDatos() {
   try {
+    console.log('🔄 Conectando a Supabase...');
+    console.log('URL:', SUPA_URL + "/rest/v1/asistencias_virtuales");
+    
     const res = await fetch(SUPA_URL + "/rest/v1/asistencias_virtuales", {
       headers: {
         "apikey": SUPA_KEY,
@@ -291,9 +297,29 @@ async function cargarDatos() {
       }
     });
     
-    if (!res.ok) throw new Error("Error al cargar datos");
+    console.log('📊 Respuesta:', res.status, res.statusText);
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error('❌ Error HTTP:', res.status, errorText);
+      throw new Error(`HTTP ${res.status}: ${errorText}`);
+    }
     
     datosPersonas = await res.json();
+    console.log('✅ Datos cargados:', datosPersonas.length, 'registros');
+    
+    if (datosPersonas.length === 0) {
+      const msg = 'ℹ️ Tabla vacía - No hay registros en asistencias_virtuales. Verifica que el formulario haya guardado datos.';
+      console.warn(msg);
+    }
+    
+    renderizar();
+  } catch (error) {
+    console.error('🔴 Error completo:', error.message);
+    console.error('Stack:', error.stack);
+    alert(`❌ Error de conexión:\n${error.message}\n\nVerifica:\n1. Que Supabase esté activo\n2. Que la tabla exista\n3. La consola tiene más detalles`);
+  }
+}
     
     // Organizar por local
     localesMap = {};
@@ -411,6 +437,7 @@ function renderizarLocales() {
             <td>${hora}</td>
             <td class="col-acciones">
               <button class="btn-edit" onclick="abrirModal(${datosPersonas.indexOf(p)})">Editar</button>
+              <button class="btn-pdf" onclick="descargarPDF(${datosPersonas.indexOf(p)})">📄 PDF</button>
             </td>
           </tr>
         `;
@@ -529,6 +556,117 @@ async function guardarEdicion() {
   btn.disabled = false;
 }
 
+// ========== DESCARGAR PDF ==========
+function descargarPDF(idx) {
+  const p = datosPersonas[idx];
+  const fechaActual = new Date().toLocaleDateString('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto;">
+      <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #163a5f; padding-bottom: 20px;">
+        <img src="data:image/png;base64,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" style="height: 60px; margin-bottom: 10px;" />
+        <h1 style="color: #163a5f; margin: 0; font-size: 24px;">PROGRAMA NUMED</h1>
+        <p style="color: #666; margin: 10px 0 0 0; font-size: 14px;">Nutrición y Prevención</p>
+      </div>
+
+      <h2 style="color: #163a5f; font-size: 18px; margin-bottom: 20px;">CONSENTIMIENTO INFORMADO</h2>
+
+      <div style="background-color: #f4f7fa; padding: 15px; border-left: 4px solid #7ab72e; margin-bottom: 20px;">
+        <p style="margin: 0; color: #333; font-size: 13px; line-height: 1.6;">
+          El/la participante confirma haber recibido información clara y completa sobre el Programa de Nutrición y Prevención NUMED, 
+          entiende los objetivos del programa y acepta participar voluntariamente.
+        </p>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h3 style="color: #1e5080; font-size: 14px; margin-bottom: 15px;">DATOS DEL PARTICIPANTE</h3>
+        
+        <table style="width: 100%; border-collapse: collapse;">
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd; width: 50%;">
+              <strong>Nombre:</strong><br>
+              <span style="color: #333; font-size: 13px;">${p.nombre || '-'}</span>
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd; width: 50%;">
+              <strong>Cédula:</strong><br>
+              <span style="color: #333; font-size: 13px;">${p.cedula || '-'}</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd; width: 50%;">
+              <strong>Empresa/Local:</strong><br>
+              <span style="color: #333; font-size: 13px;">${p.empresa || '-'}</span>
+            </td>
+            <td style="padding: 10px; border-bottom: 1px solid #ddd; width: 50%;">
+              <strong>Estado:</strong><br>
+              <span style="color: #333; font-size: 13px; background: ${p.estado_asistencia === 'presente' ? '#eef6e0' : '#fee2e2'}; padding: 3px 8px; border-radius: 4px;">
+                ${p.estado_asistencia || '-'}
+              </span>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <div style="margin-bottom: 30px;">
+        <h3 style="color: #1e5080; font-size: 14px; margin-bottom: 15px;">DECLARACIÓN DE COMPROMISO</h3>
+        <p style="color: #333; font-size: 13px; line-height: 1.6; margin: 0;">
+          Declaro que he leído, comprendo y acepto los términos del Programa de Nutrición y Prevención. 
+          Me comprometo a participar activamente y a mantener una actitud positiva hacia el programa.
+        </p>
+      </div>
+
+      <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #ddd;">
+        <div style="margin-bottom: 40px;">
+          <p style="color: #666; font-size: 12px; margin: 0 0 10px 0;">Firma del Participante:</p>
+          <div style="font-family: 'Brush Script MT', cursive; font-size: 28px; color: #163a5f; height: 60px; display: flex; align-items: center;">
+            ${p.firma || '___________________'}
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div>
+            <p style="color: #666; font-size: 12px; margin: 0 0 10px 0;">Fecha:</p>
+            <p style="color: #333; font-size: 13px; margin: 0; font-weight: bold;">${fechaActual}</p>
+          </div>
+          <div>
+            <p style="color: #666; font-size: 12px; margin: 0 0 10px 0;">Hora de Registro:</p>
+            <p style="color: #333; font-size: 13px; margin: 0; font-weight: bold;">
+              ${p.hora_ingreso ? new Date(p.hora_ingreso).toLocaleTimeString('es-ES') : '-'}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #163a5f; text-align: center;">
+        <p style="color: #666; font-size: 11px; margin: 0;">
+          Documento generado automáticamente por el sistema NUMED<br>
+          Programa de Nutrición y Prevención
+        </p>
+      </div>
+    </div>
+  `;
+
+  const element = document.createElement('div');
+  element.innerHTML = htmlContent;
+  document.body.appendChild(element);
+
+  const opt = {
+    margin: 10,
+    filename: `Consentimiento_${p.nombre.replace(/\s+/g, '_')}_${p.cedula}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+  };
+
+  html2pdf().set(opt).from(element).save().then(() => {
+    document.body.removeChild(element);
+  });
+}
+
 // ========== UTILIDADES ==========
 function cerrarSesion() {
   if (confirm('¿Cerrar sesión?')) {
@@ -536,8 +674,6 @@ function cerrarSesion() {
     // Redirigir a login o recargar
   }
 }
-
-// Cerrar modal al hacer click fuera
 document.addEventListener('click', (e) => {
   const modal = document.getElementById('editModal');
   if (e.target === modal) cerrarModal();
