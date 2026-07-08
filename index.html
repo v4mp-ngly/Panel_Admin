@@ -3,384 +3,544 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin - Plaza Andalucía</title>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.1"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<title>Panel Personas por Locales - NUMED</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{--azul:#163a5f;--verde:#7ab72e;--text:#1a2533;--bg:#f4f7fa}
-body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text)}
-.header{background:var(--azul);color:white;padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:center}
-.header h1{margin:0;font-size:24px}
-.btn{padding:10px 20px;border:none;border-radius:8px;cursor:pointer;font-weight:600}
-.btn-logout{background:#b91c1c;color:white}
-.btn-logout:hover{background:#991818}
-.container{max-width:1400px;margin:0 auto;padding:2rem}
-.hidden{display:none!important}
-.login-box{max-width:400px;margin:50px auto;background:white;border-radius:12px;padding:2rem;box-shadow:0 2px 20px rgba(0,0,0,0.1)}
-.form-group{margin-bottom:1rem}
-.form-group label{display:block;font-size:12px;font-weight:600;color:#666;margin-bottom:6px}
-.form-group input{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:14px}
-.form-group input:focus{outline:none;border-color:var(--azul);box-shadow:0 0 0 3px rgba(22,58,95,.1)}
-.btn-submit{width:100%;padding:12px;background:var(--azul);color:white;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-top:1rem}
-.btn-submit:hover{background:#0f2847}
-.table-wrapper{background:white;border-radius:12px;box-shadow:0 2px 20px rgba(0,0,0,0.1);overflow:hidden}
-.search-box{margin-bottom:2rem}
-.search-box input{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:14px}
-table{width:100%;border-collapse:collapse}
-thead{background:var(--azul);color:white}
-th{padding:1rem;text-align:left;font-weight:600;font-size:13px}
-td{padding:1rem;border-bottom:1px solid #eee;font-size:13px}
-tbody tr:hover{background:#f9f9f9}
-.badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600}
-.badge-done{background:#eef6e0;color:#5c8f1e}
-.badge-pending{background:#f0f0f0;color:#666}
-.action-btns{display:flex;gap:8px}
-.btn-small{padding:6px 12px;background:var(--azul);color:white;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600}
-.btn-small:hover{background:#0f2847}
-.btn-small.danger{background:#b91c1c}
-.btn-small.danger:hover{background:#991818}
-.modal{display:none;position:fixed;z-index:1000;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);overflow-y:auto}
-.modal.active{display:block}
-.modal-content{background:white;border-radius:12px;max-width:700px;width:95%;margin:50px auto;padding:2rem;box-shadow:0 2px 20px rgba(0,0,0,0.1)}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;border-bottom:1px solid #eee;padding-bottom:1rem}
-.close-btn{background:none;border:none;font-size:20px;cursor:pointer;color:#666}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0}
-.info-item{background:#e8f0f7;padding:1rem;border-radius:8px}
-.info-label{font-size:11px;font-weight:600;color:#666;text-transform:uppercase}
-.info-value{font-size:16px;font-weight:700;color:var(--azul);margin-top:4px}
-.alert{padding:1rem;border-radius:8px;margin-bottom:1rem}
-.alert-success{background:#d4edda;color:#155724;border:1px solid #c3e6cb}
-.alert-danger{background:#f8d7da;color:#721c24;border:1px solid #f5c6cb}
-.loading{text-align:center;padding:2rem}
-.spinner{display:inline-block;width:40px;height:40px;border:4px solid #ddd;border-top-color:var(--azul);border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --azul:#163a5f;--azul-med:#1e5080;--azul-light:#e8f0f7;
+  --verde:#7ab72e;--verde-dark:#5c8f1e;--verde-light:#eef6e0;
+  --text:#1a2533;--text-muted:#4a5a6e;--text-hint:#8a9bae;
+  --border:rgba(30,80,128,0.12);--border-med:rgba(30,80,128,0.22);
+  --bg:#f4f7fa;--white:#fff;--radius:12px;--radius-sm:8px;
+  --shadow:0 2px 16px rgba(30,80,128,0.08);--shadow-lg:0 8px 32px rgba(30,80,128,0.13)
+}
+
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+
+/* TOPBAR */
+.topbar{background:var(--azul);padding:.75rem 1.5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--verde);position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.topbar-brand{display:flex;align-items:center;gap:15px}
+.topbar-logo{height:34px;width:auto}
+.topbar-info{display:flex;flex-direction:column;justify-content:center}
+.topbar-name{font-family:'Playfair Display',serif;font-size:17px;color:#fff;font-weight:600}
+.topbar-sub{font-size:11px;color:rgba(255,255,255,.6);margin-top:2px}
+.btn-logout{font-size:12px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15);padding:6px 14px;border-radius:6px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+.btn-logout:hover{background:rgba(255,255,255,.2)}
+
+/* CONTENT */
+.content{max-width:1200px;margin:0 auto;padding:1.5rem 1rem 3rem}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:2rem}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;box-shadow:var(--shadow)}
+.stat-label{font-size:10px;font-weight:700;color:var(--text-hint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.stat-value{font-size:28px;font-weight:600;color:var(--azul);font-family:'Playfair Display',serif;margin-bottom:4px}
+.stat-sub{font-size:11px;color:var(--text-hint)}
+
+/* TABS LOCALES */
+.tabs-container{display:flex;gap:0;overflow-x:auto;margin-bottom:1.5rem;border-bottom:2px solid var(--border);padding-bottom:0}
+.tab-local{padding:12px 18px;font-size:13px;font-weight:600;color:var(--text-muted);cursor:pointer;border:none;background:transparent;font-family:'Outfit',sans-serif;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.tab-local.active{color:var(--azul);border-bottom-color:var(--verde)}
+.tab-local:hover:not(.active){color:var(--azul-med)}
+.tab-count{background:var(--azul-light);color:var(--azul-med);border-radius:20px;padding:2px 10px;font-size:10px;font-weight:700}
+
+/* FILTROS Y BUSQUEDA */
+.filters-bar{background:var(--white);padding:1rem;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:1.5rem;display:flex;gap:12px;flex-wrap:wrap;align-items:center;box-shadow:var(--shadow)}
+.search-box{flex:1;min-width:200px;position:relative}
+.search-box input{width:100%;padding:8px 12px 8px 32px;border:1px solid var(--border-med);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:13px}
+.search-box::before{content:'🔍';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px}
+.filter-select{padding:8px 12px;border:1px solid var(--border-med);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:13px;background:var(--white);color:var(--text);cursor:pointer}
+
+/* TABLA PERSONAS */
+.local-section{display:none}
+.local-section.active{display:block;animation:fadeIn .3s}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+.local-header{background:var(--azul);color:#fff;padding:1rem 1.25rem;border-radius:var(--radius) var(--radius) 0 0;margin-bottom:1rem}
+.local-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:600;margin-bottom:.25rem}
+.local-sub{font-size:12px;color:rgba(255,255,255,.7)}
+
+.table-wrapper{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);margin-bottom:2rem}
+.table-container{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{background:var(--azul-light);color:var(--azul);padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid var(--border-med)}
+td{padding:10px 12px;border-bottom:1px solid var(--border)}
+tbody tr:hover{background:var(--bg)}
+
+.status-badge{display:inline-block;padding:3px 10px;border-radius:14px;font-size:11px;font-weight:600;text-transform:uppercase}
+.status-present{background:var(--verde-light);color:var(--verde-dark);border:1px solid rgba(122,183,46,.3)}
+.status-pending{background:#fef3c7;color:#92400e;border:1px solid #fcd34d}
+.status-absent{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+
+.col-acciones{text-align:center}
+.btn-edit{background:var(--azul-med);color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s}
+.btn-edit:hover{background:var(--azul)}
+
+/* FIRMA */
+code{background:var(--bg);padding:3px 6px;border-radius:4px;font-family:'Monaco','Courier New',monospace}
+
+.empty-state{padding:3rem 2rem;text-align:center;color:var(--text-hint)}
+.empty-icon{font-size:48px;margin-bottom:1rem;opacity:.5}
+.empty-text{font-size:14px;margin-bottom:.5rem}
+
+/* MODAL */
+#editModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+#editModal.show{display:flex}
+.modal-content{background:var(--white);border-radius:var(--radius);max-width:400px;width:90%;overflow:hidden;box-shadow:var(--shadow-lg)}
+.modal-header{background:var(--azul);color:#fff;padding:1rem 1.25rem;font-family:'Playfair Display',serif;font-size:18px;font-weight:600}
+.modal-body{padding:1.5rem}
+.modal-field{margin-bottom:1rem}
+.modal-field label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px}
+.modal-field input,.modal-field select{width:100%;padding:8px 12px;border:1px solid var(--border-med);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;font-size:13px}
+.modal-field input:focus,.modal-field select:focus{outline:none;border-color:var(--azul-med);box-shadow:0 0 0 3px rgba(30,80,128,.08)}
+.modal-footer{display:flex;gap:10px;padding:1rem 1.25rem;border-top:1px solid var(--border)}
+.btn-cancel{flex:1;padding:8px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;cursor:pointer;font-weight:600;color:var(--text)}
+.btn-cancel:hover{background:var(--border)}
+.btn-save{flex:1;padding:8px;background:var(--azul-med);color:#fff;border:none;border-radius:var(--radius-sm);font-family:'Outfit',sans-serif;cursor:pointer;font-weight:600;transition:all .2s}
+.btn-save:hover{background:var(--azul)}
+.btn-save:disabled{opacity:.5;cursor:not-allowed}
+
+/* RESPONSIVE */
 @media(max-width:768px){
-  .info-grid{grid-template-columns:1fr}
-  .action-btns{flex-direction:column}
+  .topbar{flex-direction:column;gap:1rem;align-items:flex-start}
+  .topbar-brand{width:100%}
+  .btn-logout{align-self:flex-end}
+  .filters-bar{flex-direction:column}
+  .search-box{width:100%}
+  .stats-grid{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+  .table-container{overflow-x:auto}
+  table{font-size:12px}
+  th,td{padding:8px 10px}
 }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login-section">
-  <div class="header">
-    <h1>Plaza Andalucía - Admin</h1>
-  </div>
-  <div class="login-box">
-    <h2 style="color:var(--azul);margin-bottom:2rem">Acceso Admin</h2>
-    <div id="login-alert"></div>
-    <div class="form-group">
-      <label>Email</label>
-      <input type="email" id="login-email" placeholder="nicole@numedrd.com">
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-brand">
+    <div class="topbar-info">
+      <div class="topbar-name">📍 Personas por Locales</div>
+      <div class="topbar-sub">Panel Administrativo NUMED</div>
     </div>
-    <div class="form-group">
-      <label>Contraseña</label>
-      <input type="password" id="login-password" placeholder="••••••••">
-    </div>
-    <button class="btn-submit" onclick="loginUser()">Acceder</button>
   </div>
+  <button class="btn-logout" onclick="cerrarSesion()">Cerrar Sesión</button>
 </div>
 
-<!-- DASHBOARD -->
-<div id="dashboard-section" class="hidden">
-  <div class="header">
-    <h1>Plaza Andalucía - Panel Admin</h1>
-    <button class="btn btn-logout" onclick="logoutUser()">Salir</button>
+<!-- CONTENIDO -->
+<div class="content">
+  
+  <!-- ESTADÍSTICAS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-label">Total Personas</div>
+      <div class="stat-value" id="stat-total">0</div>
+      <div class="stat-sub">Registradas</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Locales</div>
+      <div class="stat-value" id="stat-locales">0</div>
+      <div class="stat-sub">Activos</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Presentes</div>
+      <div class="stat-value" id="stat-presentes">0</div>
+      <div class="stat-sub">Confirmados</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Pendientes</div>
+      <div class="stat-value" id="stat-pendientes">0</div>
+      <div class="stat-sub">Por confirmar</div>
+    </div>
   </div>
-  <div class="container">
-    <h2 style="color:var(--azul);margin-bottom:1rem">Registros de Asistencia</h2>
+
+  <!-- TABS DE LOCALES -->
+  <div class="tabs-container" id="tabsContainer"></div>
+
+  <!-- FILTROS -->
+  <div class="filters-bar">
     <div class="search-box">
-      <input type="text" id="search-input" placeholder="Buscar por nombre o cédula..." onkeyup="filterUsers()">
+      <input type="text" id="searchInput" placeholder="Buscar por nombre, cédula..." onkeyup="filtrarTabla()">
     </div>
-    <div id="alert-container"></div>
-    <div id="loading-container"></div>
-    <div class="table-wrapper">
-      <table id="users-table">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Cédula</th>
-            <th>Empresa</th>
-            <th>Paso 1</th>
-            <th>Paso 2</th>
-            <th>Paso 3</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="users-tbody"></tbody>
-      </table>
-    </div>
+    <select id="filterStatus" class="filter-select" onchange="filtrarTabla()">
+      <option value="">Todos los estados</option>
+      <option value="presente">Presente</option>
+      <option value="pendiente">Pendiente</option>
+      <option value="ausente">Ausente</option>
+    </select>
   </div>
+
+  <!-- SECCIONES DE LOCALES -->
+  <div id="localesContainer"></div>
+
 </div>
 
-<!-- MODAL -->
-<div id="detail-modal" class="modal">
+<!-- MODAL EDITAR -->
+<div id="editModal">
   <div class="modal-content">
-    <div class="modal-header">
-      <h3 id="modal-title">Detalles</h3>
-      <button class="close-btn" onclick="closeModal()">&times;</button>
+    <div class="modal-header">Editar Registro</div>
+    <div class="modal-body">
+      <div class="modal-field">
+        <label>Nombre</label>
+        <input type="text" id="modalNombre" readonly>
+      </div>
+      <div class="modal-field">
+        <label>Cédula</label>
+        <input type="text" id="modalCedula" readonly>
+      </div>
+      <div class="modal-field">
+        <label>Estado</label>
+        <select id="modalEstado">
+          <option value="presente">Presente</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="ausente">Ausente</option>
+        </select>
+      </div>
+      <div class="modal-field">
+        <label>Empresa</label>
+        <input type="text" id="modalEmpresa">
+      </div>
+      <div class="modal-field">
+        <label>Firma (Compromiso)</label>
+        <input type="text" id="modalFirma" placeholder="Nombre o texto de firma">
+      </div>
     </div>
-    <div class="info-grid">
-      <div class="info-item"><div class="info-label">Nombre</div><div class="info-value" id="detail-nombre">-</div></div>
-      <div class="info-item"><div class="info-label">Cédula</div><div class="info-value" id="detail-cedula">-</div></div>
-      <div class="info-item"><div class="info-label">Empresa</div><div class="info-value" id="detail-empresa">-</div></div>
-      <div class="info-item"><div class="info-label">Sucursal</div><div class="info-value" id="detail-sucursal">-</div></div>
-      <div class="info-item"><div class="info-label">WhatsApp</div><div class="info-value" id="detail-whatsapp">-</div></div>
-      <div class="info-item"><div class="info-label">Correo</div><div class="info-value" id="detail-correo">-</div></div>
-    </div>
-    <div class="action-btns" style="justify-content:flex-end;gap:10px;margin-top:2rem">
-      <button class="btn-small" onclick="downloadPDFNow()">📥 Descargar PDF</button>
-      <button class="btn-small danger" onclick="deleteRecord()">🗑️ Eliminar</button>
-      <button class="btn-small" onclick="closeModal()">Cerrar</button>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="cerrarModal()">Cancelar</button>
+      <button class="btn-save" onclick="guardarEdicion()" id="btnGuardar">Guardar</button>
     </div>
   </div>
 </div>
 
 <script>
-const SUPABASE_URL = 'https://lfyholfrqxyryveikspy.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmeWhvbGZycXh5cnl2ZWlrc3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NDc3ODgsImV4cCI6MjA5OTAyMzc4OH0.kn93eFHmXPdHQShjsV2-4Gn4ThXSVtwQkBEkfBsEuO8';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ========== CONFIGURACIÓN SUPABASE ==========
+const SUPA_URL = "https://lfyholfrqxyryveikspy.supabase.co";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmeWhvbGZycXh5cnl2ZWlrc3B5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0NDc3ODgsImV4cCI6MjA5OTAyMzc4OH0.kn93eFHmXPdHQShjsV2-4Gn4ThXSVtwQkBEkfBsEuO8";
 
-let currentUser = null;
-let allUsers = [];
-let editingUser = null;
+// ========== DATOS ==========
+let datosPersonas = [];
+let localesMap = {};
+let editandoIdx = null;
 
-async function loginUser() {
-  const email = document.getElementById('login-email').value;
-  const password = document.getElementById('login-password').value;
-  if (!email || !password) {
-    showAlert('Completa todos los campos', 'danger');
-    return;
-  }
+// SUCURSAL 1ER NIVEL
+const LOCALES_NIVEL1 = [
+  "SMASH BY CRHRIS",
+  "GRUPO EJ TAVAREZ",
+  "BANCO POPULAR",
+  "BANCO POPULAR DIVISION CANALES",
+  "NUCHY BAR (CANTICO)",
+  "LOTEKA SRL",
+  "MANIAPHONE RD",
+  "GOLD AND SILVER",
+  "LIZA BLANCO BEAUTY STUDIO",
+  "LIZA BLANCO BOUTIQUE",
+  "BAGELS SHOP (CAFE ALTA SENAL)",
+  "UXMAL COMERCIAL SRL",
+  "VITASALUD SRL",
+  "ROYAL PALMS",
+  "PROIMAGEN",
+  "CHURCHILL BUSINESS SRL",
+  "COSFICLINIC",
+  "TASTY ROLLS",
+  "UPS DOMINICANA SA",
+  "COLMADON LOS REALES/SALOMON SAING",
+  "GRUPO CAROL S.A.S.",
+  "VINICOLA DEL NORTE"
+];
+
+// SUCURSAL 2DO NIVEL
+const LOCALES_NIVEL2 = [
+  "CRIS SPECIAL NATURAL SRL",
+  "OLIVER PELUQUERIA",
+  "VIMAR BEAUTY CENTER",
+  "GALAN ALFONSO GROUP SRL/ATUENDO",
+  "OFICINAS ADMINISTRATIVAS",
+  "7080 SMOKE ROOM",
+  "D CABALLEROS TRAJES ELEGANTES",
+  "ARCE DOMINICANA SRL",
+  "TRESS HAIR LAB & BEAUTY",
+  "LUCIA SQD",
+  "HAIR CLUB",
+  "LUMEN RESTAURANTE",
+  "OZEANO SWIMWEAR",
+  "FUNDACION PARA EL ARTE Y EL DESARROLLO ARTEDOM",
+  "BARBAROCK S.R.L.",
+  "BE GALA TRAJES ELEGANTES",
+  "GRUPO JAYASE",
+  "CENTRO DE PSICOLOGIA Y METAMORFOSIS"
+];
+
+const LOCALES = [...LOCALES_NIVEL1, ...LOCALES_NIVEL2];
+
+// ========== INICIALIZACIÓN ==========
+window.addEventListener('load', async () => {
+  await cargarDatos();
+  renderizarTabs();
+  renderizarLocales();
+  actualizarEstadisticas();
+});
+
+// ========== CARGAR DATOS ==========
+async function cargarDatos() {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    currentUser = data.user;
-    loadRecords();
-    document.getElementById('login-section').classList.add('hidden');
-    document.getElementById('dashboard-section').classList.remove('hidden');
+    const res = await fetch(SUPA_URL + "/rest/v1/asistencias_virtuales", {
+      headers: {
+        "apikey": SUPA_KEY,
+        "Authorization": "Bearer " + SUPA_KEY
+      }
+    });
+    
+    if (!res.ok) throw new Error("Error al cargar datos");
+    
+    datosPersonas = await res.json();
+    
+    // Organizar por local
+    localesMap = {};
+    LOCALES.forEach(local => {
+      localesMap[local] = datosPersonas.filter(p => p.empresa === local);
+    });
+    
+    console.log("✓ Datos cargados:", datosPersonas.length, "registros");
   } catch (error) {
-    showAlert('Error: ' + error.message, 'danger');
+    console.error("Error cargando datos:", error);
+    alert("Error al cargar los datos. Verifica la conexión.");
   }
 }
 
-async function logoutUser() {
-  await supabase.auth.signOut();
-  currentUser = null;
-  document.getElementById('login-section').classList.remove('hidden');
-  document.getElementById('dashboard-section').classList.add('hidden');
-  document.getElementById('login-email').value = '';
-  document.getElementById('login-password').value = '';
-}
-
-async function loadRecords() {
-  document.getElementById('loading-container').innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-  try {
-    const { data, error } = await supabase
-      .from('plaza_andalucia_registros')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    allUsers = data || [];
-    renderTable(allUsers);
-  } catch (error) {
-    showAlert('Error: ' + error.message, 'danger');
-  }
-  document.getElementById('loading-container').innerHTML = '';
-}
-
-function renderTable(users) {
-  const tbody = document.getElementById('users-tbody');
-  tbody.innerHTML = '';
-  users.forEach(user => {
-    const p1 = user.estado === 'asistencia' || user.estado === 'consentimiento' || user.estado === 'completado';
-    const p2 = user.estado === 'consentimiento' || user.estado === 'completado';
-    const p3 = user.estado === 'completado';
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td>${user.nombre || '-'}</td>
-      <td>${user.cedula || '-'}</td>
-      <td>${user.empresa || '-'}</td>
-      <td><span class="badge ${p1 ? 'badge-done' : 'badge-pending'}">${p1 ? '✓' : '✗'}</span></td>
-      <td><span class="badge ${p2 ? 'badge-done' : 'badge-pending'}">${p2 ? '✓' : '✗'}</span></td>
-      <td><span class="badge ${p3 ? 'badge-done' : 'badge-pending'}">${p3 ? '✓' : '✗'}</span></td>
-      <td>
-        <div class="action-btns">
-          <button class="btn-small" onclick="viewDetails('${user.id}')">Ver</button>
-          <button class="btn-small" onclick="quickPDF('${user.id}')">PDF</button>
-        </div>
-      </td>
-    `;
-    tbody.appendChild(row);
+// ========== RENDERIZAR TABS ==========
+function renderizarTabs() {
+  const container = document.getElementById('tabsContainer');
+  container.innerHTML = '';
+  
+  LOCALES.forEach((local, idx) => {
+    const count = localesMap[local] ? localesMap[local].length : 0;
+    const btn = document.createElement('button');
+    btn.className = 'tab-local' + (idx === 0 ? ' active' : '');
+    btn.innerHTML = `${local} <span class="tab-count">${count}</span>`;
+    btn.onclick = () => cambiarTab(local, btn);
+    container.appendChild(btn);
   });
 }
 
-function viewDetails(id) {
-  editingUser = allUsers.find(u => u.id === id);
-  if (!editingUser) return;
+function cambiarTab(local, btn) {
+  document.querySelectorAll('.tab-local').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.local-section').forEach(s => s.classList.remove('active'));
   
-  document.getElementById('modal-title').textContent = 'Detalles - ' + editingUser.nombre;
-  document.getElementById('detail-nombre').textContent = editingUser.nombre || '-';
-  document.getElementById('detail-cedula').textContent = editingUser.cedula || '-';
-  document.getElementById('detail-empresa').textContent = editingUser.empresa || '-';
-  document.getElementById('detail-sucursal').textContent = editingUser.sucursal || '-';
-  document.getElementById('detail-whatsapp').textContent = editingUser.whatsapp || '-';
-  document.getElementById('detail-correo').textContent = editingUser.correo || '-';
-  document.getElementById('detail-modal').classList.add('active');
+  btn.classList.add('active');
+  document.getElementById('section-' + local.replace(/ /g, '-')).classList.add('active');
+  filtrarTabla();
 }
 
-function closeModal() {
-  document.getElementById('detail-modal').classList.remove('active');
-  editingUser = null;
-}
-
-async function downloadPDFNow() {
-  if (!editingUser) return;
-  await generarPDF(editingUser);
-}
-
-async function quickPDF(id) {
-  const user = allUsers.find(u => u.id === id);
-  if (!user) return;
-  await generarPDF(user);
-}
-
-async function generarPDF(user) {
-  try {
-    const p1 = user.estado === 'asistencia' || user.estado === 'consentimiento' || user.estado === 'completado';
-    const p2 = user.estado === 'consentimiento' || user.estado === 'completado';
-    const p3 = user.estado === 'completado';
-
-    const htmlContent = `
-      <div style="padding: 40px; font-family: Arial; max-width: 900px;">
-        <div style="text-align: center; margin-bottom: 40px; border-bottom: 3px solid #163a5f; padding-bottom: 20px;">
-          <h1 style="color: #163a5f; margin: 0; font-size: 32px;">PLAZA ANDALUCÍA</h1>
-          <p style="color: #7ab72e; margin: 10px 0 0 0; font-size: 16px; font-weight: bold;">Programa de Nutrición y Prevención</p>
+// ========== RENDERIZAR LOCALES ==========
+function renderizarLocales() {
+  const container = document.getElementById('localesContainer');
+  container.innerHTML = '';
+  
+  LOCALES.forEach((local, idx) => {
+    const personas = localesMap[local] || [];
+    const localId = 'section-' + local.replace(/ /g, '-');
+    
+    const section = document.createElement('div');
+    section.id = localId;
+    section.className = 'local-section' + (idx === 0 ? ' active' : '');
+    
+    let html = `
+      <div class="table-wrapper">
+        <div class="local-header">
+          <div class="local-title">📍 ${local}</div>
+          <div class="local-sub">
+            ${personas.length} personas registradas 
+            ${personas.filter(p => p.firma && p.firma.trim() !== '').length > 0 ? 
+              `• ✓ ${personas.filter(p => p.firma && p.firma.trim() !== '').length} comprometidas` 
+              : ''}
+          </div>
         </div>
+        <div class="table-container">
+    `;
+    
+    if (personas.length === 0) {
+      html += `
+        <div class="empty-state">
+          <div class="empty-icon">📭</div>
+          <div class="empty-text">Sin registros en este local</div>
+        </div>
+      `;
+    } else {
+      html += `
+        <table>
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Cédula</th>
+              <th>Empresa</th>
+              <th>Estado</th>
+              <th>Compromiso</th>
+              <th>Firma</th>
+              <th>Hora Ingreso</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-${local.replace(/ /g, '-')}">
+      `;
+      
+      personas.forEach((p, i) => {
+        const estado = p.estado_asistencia || 'pendiente';
+        const statusClass = `status-${estado}`;
+        const hora = p.hora_ingreso ? new Date(p.hora_ingreso).toLocaleString('es-ES', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
+        }) : '-';
         
-        <h2 style="color: #163a5f; margin: 30px 0 20px 0; font-size: 24px;">Registro de Participante</h2>
+        const tieneCompromiso = p.firma && p.firma.trim() !== '';
+        const compromisoClass = tieneCompromiso ? 'status-present' : 'status-absent';
+        const compromisoText = tieneCompromiso ? '✓ Comprometido' : '✗ Sin firma';
+        const firmaText = tieneCompromiso ? p.firma : '-';
         
-        <table style="width: 100%; border-collapse: collapse; margin: 25px 0; font-size: 14px;">
-          <tr><td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: #e8f0f7; width: 35%;">Nombre:</td><td style="padding: 12px; border: 1px solid #ddd;">${user.nombre || '-'}</td></tr>
-          <tr><td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: #e8f0f7;">Cédula:</td><td style="padding: 12px; border: 1px solid #ddd;">${user.cedula || '-'}</td></tr>
-          <tr><td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: #e8f0f7;">Empresa:</td><td style="padding: 12px; border: 1px solid #ddd;">${user.empresa || '-'}</td></tr>
-          <tr><td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: #e8f0f7;">Sucursal:</td><td style="padding: 12px; border: 1px solid #ddd;">${user.sucursal || '-'}</td></tr>
-          <tr><td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: #e8f0f7;">WhatsApp:</td><td style="padding: 12px; border: 1px solid #ddd;">${user.whatsapp || '-'}</td></tr>
-          <tr><td style="padding: 12px; border: 1px solid #ddd; font-weight: bold; background: #e8f0f7;">Correo:</td><td style="padding: 12px; border: 1px solid #ddd;">${user.correo || '-'}</td></tr>
+        html += `
+          <tr>
+            <td><strong>${p.nombre || '-'}</strong></td>
+            <td>${p.cedula || '-'}</td>
+            <td>${p.empresa || '-'}</td>
+            <td><span class="status-badge ${statusClass}">${estado}</span></td>
+            <td><span class="status-badge ${compromisoClass}">${compromisoText}</span></td>
+            <td><code style="font-size:11px;color:var(--text-hint);max-width:150px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${firmaText}</code></td>
+            <td>${hora}</td>
+            <td class="col-acciones">
+              <button class="btn-edit" onclick="abrirModal(${datosPersonas.indexOf(p)})">Editar</button>
+            </td>
+          </tr>
+        `;
+      });
+      
+      html += `
+          </tbody>
         </table>
-        
-        <h3 style="color: #163a5f; margin: 30px 0 15px 0; font-size: 18px;">Estado del Programa</h3>
-        <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px;">
-          <tr><td style="padding: 14px; border: 2px solid #ddd; font-weight: bold; background: ${p1 ? '#eef6e0' : '#fff3cd'};">✓ Paso 1: Asistencia</td><td style="padding: 14px; border: 2px solid #ddd; text-align: center; background: ${p1 ? '#eef6e0' : '#fff3cd'}; font-weight: bold;">${p1 ? 'COMPLETO' : 'PENDIENTE'}</td></tr>
-          <tr><td style="padding: 14px; border: 2px solid #ddd; font-weight: bold; background: ${p2 ? '#eef6e0' : '#fff3cd'};">✓ Paso 2: Consentimiento</td><td style="padding: 14px; border: 2px solid #ddd; text-align: center; background: ${p2 ? '#eef6e0' : '#fff3cd'}; font-weight: bold;">${p2 ? 'COMPLETO' : 'PENDIENTE'}</td></tr>
-          <tr><td style="padding: 14px; border: 2px solid #ddd; font-weight: bold; background: ${p3 ? '#eef6e0' : '#fff3cd'};">✓ Paso 3: Evaluación</td><td style="padding: 14px; border: 2px solid #ddd; text-align: center; background: ${p3 ? '#eef6e0' : '#fff3cd'}; font-weight: bold;">${p3 ? 'COMPLETO' : 'PENDIENTE'}</td></tr>
-        </table>
-        
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 12px; color: #666;">
-          <p><strong>Fecha de Emisión:</strong> ${new Date().toLocaleDateString('es-DO')}</p>
-          <p style="margin-top: 10px;">Documento generado por Plaza Andalucía - NUMED</p>
+      `;
+    }
+    
+    html += `
         </div>
       </div>
     `;
-
-    const element = document.createElement('div');
-    element.innerHTML = htmlContent;
-    element.style.position = 'absolute';
-    element.style.left = '-9999px';
-    element.style.width = '800px';
-    document.body.appendChild(element);
-
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const canvas = await html2canvas(element, {
-      scale: 2,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#ffffff'
-    });
-
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'mm',
-      format: 'a4'
-    });
-
-    const imgWidth = 210;
-    const imgHeight = (canvas.height * imgWidth) / canvas.width;
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-    heightLeft -= 297;
-
-    while (heightLeft > 0) {
-      position = heightLeft - imgHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-      heightLeft -= 297;
-    }
-
-    pdf.save(`registro_${user.cedula}.pdf`);
-    document.body.removeChild(element);
-    showAlert('✅ PDF descargado: ' + user.nombre, 'success');
-
-  } catch (error) {
-    console.error('Error PDF:', error);
-    showAlert('⚠️ Error al generar PDF: ' + error.message, 'danger');
-  }
+    
+    section.innerHTML = html;
+    container.appendChild(section);
+  });
 }
 
-async function deleteRecord() {
-  if (!editingUser) return;
-  if (!confirm('¿Eliminar este registro?')) return;
+// ========== FILTRAR TABLA ==========
+function filtrarTabla() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const statusFilter = document.getElementById('filterStatus').value;
+  
+  document.querySelectorAll('table tbody tr').forEach(row => {
+    const nombre = row.cells[0].textContent.toLowerCase();
+    const cedula = row.cells[1].textContent.toLowerCase();
+    const statusCell = row.cells[3];
+    const status = statusCell.textContent.toLowerCase().trim();
+    
+    const matchSearch = nombre.includes(search) || cedula.includes(search);
+    const matchStatus = !statusFilter || status.includes(statusFilter);
+    
+    row.style.display = (matchSearch && matchStatus) ? '' : 'none';
+  });
+}
+
+// ========== ESTADÍSTICAS ==========
+function actualizarEstadisticas() {
+  const total = datosPersonas.length;
+  const locales = Object.keys(localesMap).filter(l => localesMap[l].length > 0).length;
+  const presentes = datosPersonas.filter(p => p.estado_asistencia === 'presente').length;
+  const pendientes = datosPersonas.filter(p => p.estado_asistencia === 'pendiente').length;
+  
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-locales').textContent = locales;
+  document.getElementById('stat-presentes').textContent = presentes;
+  document.getElementById('stat-pendientes').textContent = pendientes;
+}
+
+// ========== MODAL ==========
+function abrirModal(idx) {
+  editandoIdx = idx;
+  const p = datosPersonas[idx];
+  
+  document.getElementById('modalNombre').value = p.nombre || '';
+  document.getElementById('modalCedula').value = p.cedula || '';
+  document.getElementById('modalEstado').value = p.estado_asistencia || 'pendiente';
+  document.getElementById('modalEmpresa').value = p.empresa || '';
+  document.getElementById('modalFirma').value = p.firma || '';
+  
+  document.getElementById('editModal').classList.add('show');
+}
+
+function cerrarModal() {
+  document.getElementById('editModal').classList.remove('show');
+  editandoIdx = null;
+}
+
+async function guardarEdicion() {
+  if (editandoIdx === null) return;
+  
+  const btn = document.getElementById('btnGuardar');
+  btn.textContent = 'Guardando...';
+  btn.disabled = true;
+  
+  const p = datosPersonas[editandoIdx];
+  const nuevoEstado = document.getElementById('modalEstado').value;
+  const nuevoEmpresa = document.getElementById('modalEmpresa').value;
+  const nuevoFirma = document.getElementById('modalFirma').value;
   
   try {
-    const { error } = await supabase
-      .from('plaza_andalucia_registros')
-      .delete()
-      .eq('id', editingUser.id);
-    if (error) throw error;
-    showAlert('Registro eliminado', 'success');
-    closeModal();
-    loadRecords();
+    const res = await fetch(SUPA_URL + "/rest/v1/asistencias_virtuales?id=eq." + p.id, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        "apikey": SUPA_KEY,
+        "Authorization": "Bearer " + SUPA_KEY
+      },
+      body: JSON.stringify({
+        estado_asistencia: nuevoEstado,
+        empresa: nuevoEmpresa,
+        firma: nuevoFirma
+      })
+    });
+    
+    if (!res.ok) throw new Error("Error al guardar");
+    
+    datosPersonas[editandoIdx].estado_asistencia = nuevoEstado;
+    datosPersonas[editandoIdx].empresa = nuevoEmpresa;
+    datosPersonas[editandoIdx].firma = nuevoFirma;
+    
+    cerrarModal();
+    await cargarDatos();
+    renderizarLocales();
+    actualizarEstadisticas();
+    
   } catch (error) {
-    showAlert('Error: ' + error.message, 'danger');
+    console.error(error);
+    alert('Error al guardar cambios');
+  }
+  
+  btn.textContent = 'Guardar';
+  btn.disabled = false;
+}
+
+// ========== UTILIDADES ==========
+function cerrarSesion() {
+  if (confirm('¿Cerrar sesión?')) {
+    alert('Sesión cerrada');
+    // Redirigir a login o recargar
   }
 }
 
-function filterUsers() {
-  const search = document.getElementById('search-input').value.toLowerCase();
-  const filtered = allUsers.filter(u => 
-    (u.nombre && u.nombre.toLowerCase().includes(search)) || 
-    (u.cedula && u.cedula.includes(search))
-  );
-  renderTable(filtered);
-}
-
-function showAlert(msg, type) {
-  const container = document.getElementById('alert-container');
-  const alert = document.createElement('div');
-  alert.className = `alert alert-${type}`;
-  alert.textContent = msg;
-  container.innerHTML = '';
-  container.appendChild(alert);
-  setTimeout(() => container.innerHTML = '', 5000);
-}
-
-window.addEventListener('load', async () => {
-  const session = await supabase.auth.getSession();
-  if (session.data.session) {
-    currentUser = session.data.session.user;
-    loadRecords();
-    document.getElementById('login-section').classList.add('hidden');
-    document.getElementById('dashboard-section').classList.remove('hidden');
-  }
+// Cerrar modal al hacer click fuera
+document.addEventListener('click', (e) => {
+  const modal = document.getElementById('editModal');
+  if (e.target === modal) cerrarModal();
 });
 </script>
 
