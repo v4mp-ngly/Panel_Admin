@@ -211,57 +211,61 @@ function renderizar() {
   document.getElementById('totalPresentes').textContent = presentes;
   document.getElementById('totalPendientes').textContent = totalPersonas - presentes;
 
+  // Mostrar TODOS los locales en los tabs
   const tabsHtml = LOCALES.map(local => {
     const count = datosPersonas.filter(p => p.empresa === local).length;
     return `<button class="tab-local" onclick="filtrarLocal('${local}')">${local} <span class="tab-count">${count}</span></button>`;
   }).join('');
   document.getElementById('tabs').innerHTML = tabsHtml;
 
-  mostrarLocal(LOCALES[0]);
+  // Mostrar TODOS los 40 locales (con o sin datos)
+  const html = LOCALES.map(local => mostrarLocal(local)).join('');
+  document.getElementById('contenido').innerHTML = html || '<p style="padding:20px;color:var(--text-hint)">📭 No hay registros aún</p>';
 }
 
 function mostrarLocal(local) {
   const personas = datosPersonas.filter(p => p.empresa === local);
-  let html = '';
-  if (personas.length > 0) {
-    html = `
-      <div class="local-section">
-        <div class="local-header">
-          <div>
-            <div class="local-title">📍 ${local}</div>
-            <div class="local-meta">${personas.length} personas registradas • ✓ ${personas.filter(p => p.estado_asistencia === 'presente').length} comprometidas</div>
-          </div>
+  const html = `
+    <div class="local-section">
+      <div class="local-header">
+        <div>
+          <div class="local-title">📍 ${local}</div>
+          <div class="local-meta">${personas.length} personas registradas ${personas.length > 0 ? '• ✓ ' + personas.filter(p => p.estado_asistencia === 'presente').length + ' comprometidas' : '• Sin registros'}</div>
         </div>
-        <table>
-          <thead><tr>
-            <th>Nombre</th><th>Cédula</th><th>Empresa</th><th>Estado</th><th>Compromiso</th><th>Firma</th><th>Hora Ingreso</th><th>Acciones</th>
-          </tr></thead>
-          <tbody>
-            ${personas.map((p, i) => `
-              <tr>
-                <td>${p.nombre}</td>
-                <td>${p.cedula}</td>
-                <td>${p.empresa}</td>
-                <td><span class="status-badge status-${p.estado_asistencia}">${p.estado_asistencia.toUpperCase()}</span></td>
-                <td>${p.firma ? '✓ COMPROMETIDO' : '-'}</td>
-                <td><code>${p.firma || '-'}</code></td>
-                <td>${p.hora_ingreso ? new Date(p.hora_ingreso).toLocaleString('es-ES') : '-'}</td>
-                <td class="col-acciones">
-                  <button class="btn-edit" onclick="abrirModal(${datosPersonas.indexOf(p)})">✏️ Editar</button>
-                  <button class="btn-pdf" onclick="descargarPDF(${datosPersonas.indexOf(p)})">📄 PDF</button>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
-        </table>
       </div>
-    `;
-  }
-  document.getElementById('contenido').innerHTML = html;
+      <table>
+        <thead><tr>
+          <th>Nombre</th><th>Cédula</th><th>Empresa</th><th>Estado</th><th>Compromiso</th><th>Firma</th><th>Hora Ingreso</th><th>Acciones</th>
+        </tr></thead>
+        <tbody>
+          ${personas.length > 0 ? personas.map((p, i) => `
+            <tr>
+              <td>${p.nombre}</td>
+              <td>${p.cedula}</td>
+              <td>${p.empresa}</td>
+              <td><span class="status-badge status-${p.estado_asistencia}">${p.estado_asistencia.toUpperCase()}</span></td>
+              <td>${p.firma ? '✓ COMPROMETIDO' : '-'}</td>
+              <td><code>${p.firma || '-'}</code></td>
+              <td>${p.hora_ingreso ? new Date(p.hora_ingreso).toLocaleString('es-ES') : '-'}</td>
+              <td class="col-acciones">
+                <button class="btn-edit" onclick="abrirModal(${datosPersonas.indexOf(p)})">✏️ Editar</button>
+                <button class="btn-pdf" onclick="descargarPDF(${datosPersonas.indexOf(p)})">📄 PDF</button>
+              </td>
+            </tr>
+          `).join('') : '<tr><td colspan="8" style="text-align:center;color:var(--text-hint);padding:20px">📭 Sin registros</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+  return html;
+}
+
+function mostrarLocalEnPantalla(local) {
+  document.getElementById('contenido').innerHTML = mostrarLocal(local);
 }
 
 function filtrarLocal(local) {
-  mostrarLocal(local);
+  mostrarLocalEnPantalla(local);
 }
 
 function filtrar() {
@@ -383,9 +387,11 @@ function descargarPDF(idx) {
     filename: `Consentimiento_${p.nombre.replace(/\s+/g, '_')}_${p.cedula}.pdf`,
     html2canvas: { scale: 2 },
     jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-  }).from(element).save().then(() => {
+  }).from(element).save();
+  
+  setTimeout(() => {
     document.body.removeChild(element);
-  });
+  }, 500);
 }
 
 function cerrarSesion() {
