@@ -358,7 +358,7 @@ function descargarPDF(idx) {
     const fechaActual = new Date().toLocaleDateString('es-ES', {year: 'numeric', month: 'long', day: 'numeric'});
 
     const htmlContent = `
-      <div style="font-family: Arial, sans-serif; padding: 30px; max-width: 800px;">
+      <div style="font-family: Arial, sans-serif; padding: 30px; width: 100%; background: white;">
         <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #163a5f; padding-bottom: 15px;">
           <h1 style="color: #163a5f; margin: 0; font-size: 24px;">🩺 PROGRAMA NUMED</h1>
           <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Nutrición y Prevención</p>
@@ -370,68 +370,93 @@ function descargarPDF(idx) {
           <p style="margin: 0;">El participante confirma haber recibido información sobre el Programa NUMED y acepta participar voluntariamente.</p>
         </div>
 
-        <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
+        <table style="width: 100%; margin: 20px 0; border-collapse: collapse; font-size: 12px;">
           <tr style="background: #e8f0f7;">
-            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Nombre:</strong><br/>${p.nombre || 'N/A'}</td>
-            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Cédula:</strong><br/>${p.cedula || 'N/A'}</td>
+            <td style="padding: 10px; border: 1px solid #999;"><strong>Nombre:</strong></td>
+            <td style="padding: 10px; border: 1px solid #999;">${p.nombre || 'N/A'}</td>
           </tr>
           <tr>
-            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Empresa:</strong><br/>${p.empresa || 'N/A'}</td>
-            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Estado:</strong><br/>${(p.estado_asistencia || 'pendiente').toUpperCase()}</td>
+            <td style="padding: 10px; border: 1px solid #999;"><strong>Cédula:</strong></td>
+            <td style="padding: 10px; border: 1px solid #999;">${p.cedula || 'N/A'}</td>
+          </tr>
+          <tr style="background: #e8f0f7;">
+            <td style="padding: 10px; border: 1px solid #999;"><strong>Empresa:</strong></td>
+            <td style="padding: 10px; border: 1px solid #999;">${p.empresa || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td style="padding: 10px; border: 1px solid #999;"><strong>Estado:</strong></td>
+            <td style="padding: 10px; border: 1px solid #999;">${(p.estado_asistencia || 'pendiente').toUpperCase()}</td>
           </tr>
         </table>
 
-        <div style="margin-top: 30px; border-top: 2px solid #ddd; padding-top: 15px;">
+        <div style="margin-top: 30px; border-top: 2px solid #333; padding-top: 15px;">
           <p style="margin: 10px 0; font-weight: bold; font-size: 12px;">FIRMA DEL PARTICIPANTE:</p>
-          <div style="font-family: 'Brush Script MT', cursive; font-size: 28px; color: #163a5f; height: 60px; border-bottom: 2px solid #000; padding: 5px 0;">${p.firma || '____________________'}</div>
+          <div style="font-family: 'Brush Script MT', cursive; font-size: 28px; color: #163a5f; height: 60px; border-bottom: 2px solid #000; padding: 5px 0;">${p.firma || ''}</div>
           <p style="margin: 15px 0 0 0; font-size: 11px; text-align: right;">Fecha: ${fechaActual}</p>
         </div>
 
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 10px; color: #666;">
-          <p style="margin: 5px 0;">ID Registro: ${p.id || 'SIN ID'}</p>
-          <p style="margin: 5px 0;">Generado: ${new Date().toLocaleString('es-ES')}</p>
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #999; font-size: 9px; color: #666;">
+          <p style="margin: 3px 0;">ID Registro: ${p.id || 'SIN ID'}</p>
+          <p style="margin: 3px 0;">Generado: ${new Date().toLocaleString('es-ES')}</p>
         </div>
       </div>
     `;
 
-    const element = document.createElement('div');
-    element.id = 'pdf-temp-' + Math.random();
-    element.innerHTML = htmlContent;
-    element.style.position = 'absolute';
-    element.style.left = '-9999px';
-    element.style.top = '-9999px';
-    element.style.width = '210mm';
-    element.style.height = 'auto';
-    document.body.appendChild(element);
+    // Crear elemento visible (no oculto)
+    const container = document.createElement('div');
+    container.id = 'pdf-container-' + Math.random().toString(36).substr(2, 9);
+    container.style.position = 'fixed';
+    container.style.top = '0';
+    container.style.left = '0';
+    container.style.width = '210mm';
+    container.style.height = '297mm';
+    container.style.padding = '0';
+    container.style.margin = '0';
+    container.style.backgroundColor = 'white';
+    container.style.zIndex = '-1';
+    container.style.visibility = 'hidden';
+    container.innerHTML = htmlContent;
+    document.body.appendChild(container);
 
+    // Esperar a que se renderice
     setTimeout(() => {
       const opt = {
-        margin: [10, 10, 10, 10],
+        margin: 0,
         filename: `Consentimiento_${(p.nombre || 'registro').replace(/\s+/g, '_')}_${p.cedula || 'SIN_ID'}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#ffffff' },
+        html2canvas: { 
+          scale: 2, 
+          useCORS: true, 
+          allowTaint: true, 
+          backgroundColor: '#ffffff',
+          logging: false
+        },
         jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
       };
 
-      html2pdf().set(opt).from(element).save().then(() => {
-        if (document.body.contains(element)) {
-          document.body.removeChild(element);
-        }
-        console.log('✅ PDF generado correctamente');
-      }).catch((err) => {
-        console.error('Error generando PDF:', err);
-        if (document.body.contains(element)) {
-          document.body.removeChild(element);
-        }
-        alert('⚠️ Error al generar PDF: ' + err.message);
-      });
-    }, 500);
+      html2pdf()
+        .set(opt)
+        .from(container.firstChild)
+        .save()
+        .then(() => {
+          document.body.removeChild(container);
+          console.log('✅ PDF descargado correctamente');
+        })
+        .catch((err) => {
+          console.error('Error PDF:', err);
+          if (document.body.contains(container)) {
+            document.body.removeChild(container);
+          }
+          alert('Error: ' + err.message);
+        });
+    }, 100);
     
   } catch (e) {
-    console.error('Error en descargarPDF:', e);
-    alert('⚠️ Error: ' + e.message);
+    console.error('Error:', e);
+    alert('Error: ' + e.message);
   }
 }
+
 
 
 function cerrarSesion() {
