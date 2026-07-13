@@ -348,80 +348,50 @@ async function guardarEdicion() {
 }
 
 function descargarPDF(idx) {
-  try {
-    if (!datosPersonas || !datosPersonas[idx]) {
-      alert('⚠️ Error: Datos no disponibles para generar PDF');
-      return;
-    }
-    
-    const p = datosPersonas[idx];
-    const fechaActual = new Date().toLocaleDateString('es-ES', {year: 'numeric', month: 'long', day: 'numeric'});
+  const p = datosPersonas[idx];
+  const fechaActual = new Date().toLocaleDateString('es-ES', {year: 'numeric', month: 'long', day: 'numeric'});
 
-    const htmlContent = `
-      <div style="font-family: Arial, sans-serif; padding: 30px; max-width: 800px;">
-        <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #163a5f; padding-bottom: 15px;">
-          <h1 style="color: #163a5f; margin: 0; font-size: 24px;">🩺 PROGRAMA NUMED</h1>
-          <p style="color: #666; margin: 5px 0 0 0; font-size: 14px;">Nutrición y Prevención</p>
-        </div>
-
-        <h2 style="color: #163a5f; margin: 20px 0; font-size: 18px;">CONSENTIMIENTO INFORMADO</h2>
-
-        <div style="background: #f4f7fa; padding: 12px; border-left: 4px solid #7ab72e; margin: 15px 0; font-size: 12px;">
-          <p style="margin: 0;">El participante confirma haber recibido información sobre el Programa NUMED y acepta participar voluntariamente.</p>
-        </div>
-
-        <table style="width: 100%; margin: 20px 0; border-collapse: collapse;">
-          <tr style="background: #e8f0f7;">
-            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Nombre:</strong><br/>${p.nombre || 'N/A'}</td>
-            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Cédula:</strong><br/>${p.cedula || 'N/A'}</td>
-          </tr>
-          <tr>
-            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Empresa:</strong><br/>${p.empresa || 'N/A'}</td>
-            <td style="padding: 10px; border: 1px solid #ddd;"><strong>Estado:</strong><br/>${(p.estado_asistencia || 'pendiente').toUpperCase()}</td>
-          </tr>
-        </table>
-
-        <div style="margin-top: 30px; border-top: 2px solid #ddd; padding-top: 15px;">
-          <p style="margin: 10px 0; font-weight: bold; font-size: 12px;">FIRMA DEL PARTICIPANTE:</p>
-          <div style="font-family: 'Brush Script MT', cursive; font-size: 28px; color: #163a5f; height: 60px; border-bottom: 2px solid #000; padding: 5px 0;">${p.firma || '____________________'}</div>
-          <p style="margin: 15px 0 0 0; font-size: 11px; text-align: right;">Fecha: ${fechaActual}</p>
-        </div>
-
-        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; font-size: 10px; color: #666;">
-          <p style="margin: 5px 0;">ID Registro: ${p.id || 'SIN ID'}</p>
-          <p style="margin: 5px 0;">Generado: ${new Date().toLocaleString('es-ES')}</p>
-        </div>
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto;">
+      <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #163a5f; padding-bottom: 20px;">
+        <img src="data:image/png;base64,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" style="height: 60px; margin-bottom: 10px;" />
+        <h1 style="color: #163a5f; margin: 0;">PROGRAMA NUMED</h1>
+        <p style="color: #666; margin: 5px 0 0 0;">Nutrición y Prevención</p>
       </div>
-    `;
 
-    const element = document.createElement('div');
-    element.id = 'pdf-temp-' + Math.random();
-    element.innerHTML = htmlContent;
-    element.style.position = 'absolute';
-    element.style.left = '-9999px';
-    element.style.top = '-9999px';
-    document.body.appendChild(element);
+      <h2 style="color: #163a5f; margin: 20px 0;">CONSENTIMIENTO INFORMADO</h2>
 
-    const opt = {
-      margin: [10, 10, 10, 10],
-      filename: `Consentimiento_${(p.nombre || 'registro').replace(/\s+/g, '_')}_${p.cedula || 'SIN_ID'}.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, allowTaint: true },
-      jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
-    };
+      <div style="background: #f4f7fa; padding: 15px; border-left: 4px solid #7ab72e; margin: 20px 0;">
+        <p style="margin: 0; font-size: 13px;">El participante confirma haber recibido información sobre el Programa NUMED y acepta participar voluntariamente.</p>
+      </div>
 
-    html2pdf().set(opt).from(element).save().then(() => {
-      document.body.removeChild(element);
-    }).catch((err) => {
-      console.error('Error generando PDF:', err);
-      document.body.removeChild(element);
-      alert('⚠️ Error al generar PDF: ' + err.message);
-    });
-    
-  } catch (e) {
-    console.error('Error en descargarPDF:', e);
-    alert('⚠️ Error: ' + e.message);
-  }
+      <table style="width: 100%; margin: 20px 0;">
+        <tr><td style="padding: 8px;"><strong>Nombre:</strong> ${p.nombre}</td><td style="padding: 8px;"><strong>Cédula:</strong> ${p.cedula}</td></tr>
+        <tr><td style="padding: 8px;"><strong>Empresa:</strong> ${p.empresa}</td><td style="padding: 8px;"><strong>Estado:</strong> ${p.estado_asistencia}</td></tr>
+      </table>
+
+      <div style="margin-top: 40px; border-top: 1px solid #ddd; padding-top: 20px;">
+        <p style="margin: 10px 0;"><strong>Firma:</strong></p>
+        <div style="font-family: cursive; font-size: 24px; color: #163a5f; height: 50px;">${p.firma || '___________________'}</div>
+        <p style="margin: 20px 0 0 0; font-size: 12px;">Fecha: ${fechaActual}</p>
+      </div>
+    </div>
+  `;
+
+  const element = document.createElement('div');
+  element.innerHTML = htmlContent;
+  document.body.appendChild(element);
+
+  html2pdf().set({
+    margin: 10,
+    filename: `Consentimiento_${p.nombre.replace(/\s+/g, '_')}_${p.cedula}.pdf`,
+    html2canvas: { scale: 2 },
+    jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+  }).from(element).save();
+  
+  setTimeout(() => {
+    document.body.removeChild(element);
+  }, 500);
 }
 
 function cerrarSesion() {
